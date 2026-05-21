@@ -1,0 +1,1674 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Nodos Profesional - Estilos de Nodos Independientes</title>
+    <style>
+        :root {
+            --bg-app: #1e1e24;
+            --bg-header: #2b2b36;
+            --border-color: #3f3f52;
+            --text-color: #f5f5f5;
+            --accent-color: #4fc3f7;
+            --accent-hover: #81d4fa;
+            --modal-bg: #2b2b36;
+            --input-bg: #1e1e24;
+            --input-border: #555;
+            --input-text: #ffffff;
+            --grid-color: rgba(255, 255, 255, 0.03);
+        }
+
+        [data-theme="light"] {
+            --bg-app: #f0f2f5;
+            --bg-header: #ffffff;
+            --border-color: #cccccc;
+            --text-color: #1e1e24;
+            --accent-color: #0288d1;
+            --accent-hover: #03a9f4;
+            --modal-bg: #ffffff;
+            --input-bg: #f9f9f9;
+            --input-border: #cccccc;
+            --input-text: #1e1e24;
+            --grid-color: rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-app);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Barra Superior */
+        header {
+            background-color: var(--bg-header);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--border-color);
+            z-index: 10;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        header h1 {
+            font-size: 1.2rem;
+            color: var(--accent-color);
+        }
+
+        .actions-bar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: #1e1e24;
+            border: none;
+            padding: 10px 18px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            background-color: #555;
+            color: #888;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-danger {
+            background-color: #e57373;
+            color: white;
+        }
+        .btn-danger:hover:not(:disabled) { background-color: #ef5350; }
+
+        .btn-secondary {
+            background-color: #78909c;
+            color: white;
+        }
+        .btn-secondary:hover:not(:disabled) { background-color: #90a4ae; }
+
+        .btn-success {
+            background-color: #66bb6a;
+            color: #1e1e24;
+        }
+        .btn-success:hover:not(:disabled) { background-color: #81c784; }
+
+        /* Contenedor del Lienzo */
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-size: 50px 50px;
+            background-image: 
+                linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Modales */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background-color: var(--modal-bg);
+            color: var(--text-color);
+            padding: 25px;
+            border-radius: 8px;
+            width: 440px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--accent-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .modal h3 {
+            margin-bottom: 15px;
+            color: var(--accent-color);
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group.checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group.checkbox-group input {
+            width: auto;
+            cursor: pointer;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            color: var(--input-text);
+            outline: none;
+        }
+
+        .form-group input[type="color"] {
+            height: 40px;
+            padding: 2px;
+            cursor: pointer;
+        }
+
+        .form-group input[type="range"] {
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .form-group input:focus, 
+        .form-group select:focus, 
+        .form-group textarea:focus {
+            border-color: var(--accent-color);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .range-value {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-color);
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra Superior -->
+    <header>
+        <h1>Node Editor Pro</h1>
+        <div class="actions-bar">
+            <button id="btn-open-create">➕ Crear Nodo</button>
+            <button id="btn-open-connections" class="btn-success" disabled>🔌 Estilo de Cable</button>
+            <button id="btn-open-edit" class="btn-secondary" disabled>✏️ Editar Selección</button>
+            <button id="btn-delete-node" class="btn-danger" disabled>🗑️ Eliminar Selección</button>
+            <button id="btn-open-settings" class="btn-secondary">⚙️ Opciones Generales</button>
+            <button id="btn-copy-style" class="btn-secondary" disabled>📋 Copiar Estilo</button>
+            <button id="btn-paste-style" class="btn-secondary" disabled>🖌️ Pegar Estilo</button>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="setting-show-grid" checked>
+                    <label for="setting-show-grid">Grilla</label>
+                </div>
+                <div class="form-group">
+                    <input type="color" id="setting-bg-color" value="#1e1e24">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Área del Canvas con Grid de fondo -->
+    <div id="canvas-container">
+        <canvas id="nodeCanvas"></canvas>
+    </div>
+
+    <!-- 1. MODAL: CREAR NODO -->
+    <div id="modal-create" class="modal-overlay">
+        <div class="modal">
+            <h3>Configurar Nuevo Nodo</h3>
+            <form id="form-create">
+                <div class="form-group">
+                    <label for="create-title">Título del Nuevo Nodo (Identificador Único):</label>
+                    <input type="text" id="create-title" required placeholder="Ej: Nodo Hijo">
+                </div>
+                <div class="form-group">
+                    <label for="create-parent-name">Nombre del Nodo Padre a conectar:</label>
+                    <input type="text" id="create-parent-name" required placeholder="Ej: Nodo Base">
+                </div>
+                <div class="form-group">
+                    <label for="create-connection">¿De qué lado del padre conectar (Origen)?</label>
+                    <select id="create-connection" class="anchor-selector">
+                        <option value="top">Top (Arriba)</option>
+                        <option value="bottom" selected>Bottom (Abajo)</option>
+                        <option value="left">Left (Izquierda)</option>
+                        <option value="right">Right (Derecha)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="create-dest-connection">¿De qué lado del hijo conectar (Destino)?</label>
+                    <select id="create-dest-connection" class="anchor-selector">
+                        <option value="top" selected>Top (Arriba)</option>
+                        <option value="bottom">Bottom (Abajo)</option>
+                        <option value="left">Left (Izquierda)</option>
+                        <option value="right">Right (Derecha)</option>
+                    </select>
+                </div>
+                <!-- Cuerpo normal para el modo rectangular -->
+                <div class="form-group group-normal-body">
+                    <label for="create-body">Cuerpo (Máx. 8 líneas):</label>
+                    <textarea id="create-body" rows="4" placeholder="Contenido del cuerpo..."></textarea>
+                </div>
+                <!-- Cuerpo elipse para el modo mapa conceptual -->
+                <div class="form-group group-concept-body" style="display: none;">
+                    <label for="create-ellipse-body">Cuerpo de la Elipse (Máx. 8 líneas):</label>
+                    <textarea id="create-ellipse-body" rows="4" placeholder="Contenido que se mostrará en el Canvas..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-danger btn-close-modal">Cancelar</button>
+                    <button type="submit">Validar y Crear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. MODAL: EDICIÓN DE NODO -->
+    <div id="modal-edit" class="modal-overlay">
+        <div class="modal">
+            <h3>Editar Nodo Seleccionado</h3>
+            <form id="form-edit">
+                <div class="form-group">
+                    <label for="edit-title">Nombre del Nodo (Identificador Único):</label>
+                    <input type="text" id="edit-title" required>
+                </div>
+
+                <!-- Dimensiones específicas para el modo Mapa Conceptual -->
+                <div id="group-concept-dimensions" style="display: none; border: 1px dashed var(--accent-color); padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+                    <div class="form-group">
+                        <label for="edit-width">Ancho de la Elipse (px):</label>
+                        <input type="number" id="edit-width" min="60" max="400" value="150">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-height">Alto de la Elipse (px):</label>
+                        <input type="number" id="edit-height" min="40" max="400" value="100">
+                    </div>
+                </div>
+
+                <!-- Cuerpo Elipse para modo Mapa Conceptual -->
+                <div class="form-group group-concept-body" style="display: none;">
+                    <label for="edit-ellipse-body">Cuerpo de la Elipse (Máx. 8 líneas):</label>
+                    <textarea id="edit-ellipse-body" rows="4" placeholder="Contenido que se mostrará en el Canvas..."></textarea>
+                </div>
+
+                <!-- Cuerpos para Modo Normal -->
+                <div class="form-group group-normal-body">
+                    <label for="edit-body">Nuevo Cuerpo (Máx. 8 líneas):</label>
+                    <textarea id="edit-body" rows="3"></textarea>
+                </div>
+                
+                <!-- Habilitación del Segundo Cuerpo -->
+                <div class="form-group checkbox-group group-normal-body">
+                    <input type="checkbox" id="edit-enable-body2">
+                    <label for="edit-enable-body2" style="display:inline; margin:0; font-weight:bold; color:var(--accent-color);">Habilitar Segundo Cuerpo</label>
+                </div>
+
+                <div class="form-group group-normal-body" id="group-body2" style="display: none;">
+                    <label for="edit-body2">Segundo Cuerpo (Máx. 8 líneas):</label>
+                    <textarea id="edit-body2" rows="3" placeholder="Contenido del segundo bloque..."></textarea>
+                </div>
+
+                <!-- ESTILOS EXCLUSIVOS DE ESTE NODO -->
+                <div style="border-top: 1px solid var(--border-color); margin-top: 15px; padding-top: 15px;">
+                    <h4 style="font-size: 0.95rem; color: var(--accent-color); margin-bottom: 10px; font-weight: bold;">Estilo Personalizado del Nodo</h4>
+                    
+                    <div class="form-group group-normal-body">
+                        <label for="edit-font-title">Tamaño de fuente del Título (px):</label>
+                        <input type="number" id="edit-font-title" min="10" max="60" value="30">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-font-body">Tamaño de fuente del Cuerpo (px):</label>
+                        <input type="number" id="edit-font-body" min="10" max="50" value="27">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-color-bg">Color de fondo:</label>
+                        <input type="color" id="edit-color-bg" value="#3f3f52">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-color-border">Color de bordes y líneas divisorias:</label>
+                        <input type="color" id="edit-color-border" value="#555555">
+                    </div>
+                    <div class="form-group group-normal-body">
+                        <label for="edit-color-title">Color de texto del título:</label>
+                        <input type="color" id="edit-color-title" value="#4fc3f7">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-color-body">Color de texto del cuerpo:</label>
+                        <input type="color" id="edit-color-body" value="#ffffff">
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-danger btn-close-modal">Cancelar</button>
+                    <button type="submit">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. MODAL: OPCIONES GENERALES -->
+    <div id="modal-settings" class="modal-overlay">
+        <div class="modal">
+            <h3>Opciones Generales</h3>
+            <div class="form-group">
+                <label for="setting-diagram-mode">Modo de Diagrama:</label>
+                <select id="setting-diagram-mode">
+                    <option value="normal" selected>Normal (Rectangular)</option>
+                    <option value="concept">Mapa Conceptual (Elipse - Solo cuerpo en lienzo)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="setting-theme">Tema de la interfaz:</label>
+                <select id="setting-theme">
+                    <option value="dark" selected>Modo Oscuro (Dark)</option>
+                    <option value="light">Modo Claro (Light)</option>
+                </select>
+            </div>
+
+            <!-- Botones de Exportar / Importar Configuración -->
+            <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                <label style="font-weight: bold; font-size: 0.85rem; color: var(--accent-color);">Configuración de Interfaz</label>
+                <div style="display: flex; gap: 8px; margin-top: 5px;">
+                    <button id="btn-export-settings" style="flex: 1; font-size: 0.8rem; padding: 6px;" class="btn-success">📤 Exportar Ajustes</button>
+                    <button id="btn-import-settings" style="flex: 1; font-size: 0.8rem; padding: 6px;" class="btn-secondary">📥 Importar Ajustes</button>
+                </div>
+            </div>
+
+            <!-- Botones de Exportar / Importar Datos de Lienzo -->
+            <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                <label style="font-weight: bold; font-size: 0.85rem; color: var(--accent-color);">Datos del Proyecto</label>
+                <div style="display: flex; gap: 8px; margin-top: 5px;">
+                    <button id="btn-export-data" style="flex: 1; font-size: 0.8rem; padding: 6px;" class="btn-success">📤 Exportar Datos</button>
+                    <button id="btn-import-data" style="flex: 1; font-size: 0.8rem; padding: 6px;" class="btn-secondary">📥 Importar Datos</button>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 20px;">
+                <button type="button" style="width: 100%;" class="btn-secondary btn-close-modal">Cerrar y Aplicar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inputs Ocultos para File Reader -->
+    <input type="file" id="file-import-settings" accept=".json" style="display: none;">
+    <input type="file" id="file-import-data" accept=".json" style="display: none;">
+
+    <!-- 4. MODAL: ESTILO DE CABLE SELECCIONADO -->
+    <div id="modal-connections" class="modal-overlay">
+        <div class="modal">
+            <h3>🔌 Configurar Cable de Conexión</h3>
+            <form id="form-connections">
+                <div class="form-group">
+                    <label for="connection-routing">Enrutamiento / Forma del cable:</label>
+                    <select id="connection-routing">
+                        <option value="diagonal">Diagonal (Directo)</option>
+                        <option value="orthogonal">Ortogonal (Ángulos Rectos L/S)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="connection-force-align">Alineación Forzada (Ajusta la posición del hijo):</label>
+                    <select id="connection-force-align">
+                        <option value="none">Ninguna (Libre)</option>
+                        <option value="horizontal">Forzar Horizontal (Eje Y constante)</option>
+                        <option value="vertical">Forzar Vertical (Eje X constante)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="connection-source-anchor">Lado de salida del Padre (Origen):</label>
+                    <select id="connection-source-anchor" class="anchor-selector">
+                        <option value="top">Top (Arriba)</option>
+                        <option value="bottom">Bottom (Abajo)</option>
+                        <option value="left">Left (Izquierda)</option>
+                        <option value="right">Right (Derecha)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="connection-dest-anchor">Lado de entrada del Hijo (Destino):</label>
+                    <select id="connection-dest-anchor" class="anchor-selector">
+                        <option value="top">Top (Arriba)</option>
+                        <option value="bottom">Bottom (Abajo)</option>
+                        <option value="left">Left (Izquierda)</option>
+                        <option value="right">Right (Derecha)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="color-connection-line">Color del Cable:</label>
+                    <input type="color" id="color-connection-line" value="#81d4fa">
+                </div>
+                <div class="form-group">
+                    <label for="range-connection-width">Grosor de la línea (px):</label>
+                    <input type="range" id="range-connection-width" min="1" max="15" value="3">
+                    <div class="range-value">
+                        <span>Fino (1px)</span>
+                        <span id="label-range-val" style="font-weight: bold; color: var(--accent-color);">3px</span>
+                        <span>Grueso (15px)</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="connection-type">Dirección / Tipo de Relación:</label>
+                    <select id="connection-type">
+                        <option value="default">Por defecto (Línea)</option>
+                        <option value="arrow-destination">Flecha hacia Destino</option>
+                        <option value="arrow-source">Flecha hacia Origen</option>
+                        <option value="arrow-both">Ambas direcciones</option>
+                        <option value="sql-one-many">SQL: Uno a Muchos (Ticks Origen, Patitas Destino)</option>
+                        <option value="sql-many-one">SQL: Muchos a Uno (Patitas Origen, Ticks Destino)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="connection-style">Estilo del trazo:</label>
+                    <select id="connection-style">
+                        <option value="solid">Línea Sólida</option>
+                        <option value="dashed">Línea Punteada</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="connection-text-start">Texto de inicio (Cerca del Padre - Máx. 5 car.):</label>
+                    <input type="text" id="connection-text-start" maxlength="5" placeholder="Ej: In">
+                </div>
+                <div class="form-group">
+                    <label for="connection-text-end">Texto de fin (Cerca del Hijo - Máx. 5 car.):</label>
+                    <input type="text" id="connection-text-end" maxlength="5" placeholder="Ej: Out">
+                </div>
+                <div class="form-group">
+                    <label for="connection-text-size">Tamaño de fuente de etiquetas de cable (px):</label>
+                    <input type="number" id="connection-text-size" value="14" min="8" max="24">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-danger btn-close-modal">Cancelar</button>
+                    <button type="submit">Listo, Aplicar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 5. MODAL: CONFIRMACIÓN PERSONALIZADA (Reemplazo de confirm) -->
+    <div id="modal-confirm" class="modal-overlay">
+        <div class="modal" style="width: 340px; border-color: #ffb300;">
+            <h3 style="color: #ffb300;">⚠️ Confirmar Acción</h3>
+            <p id="confirm-message" style="margin-bottom: 20px; font-size: 0.95rem; line-height: 1.4; opacity: 0.9;"></p>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" id="btn-confirm-cancel" style="width: 50%;">Cancelar</button>
+                <button type="button" class="btn-danger" id="btn-confirm-ok" style="width: 50%;">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. MODAL: ALERTA PERSONALIZADA (Reemplazo de alert) -->
+    <div id="modal-alert" class="modal-overlay">
+        <div class="modal" style="width: 340px; border-color: #e57373;">
+            <h3 style="color: #e57373;">⚠️ Advertencia</h3>
+            <p id="alert-message" style="margin-bottom: 20px; font-size: 0.95rem; line-height: 1.4; opacity: 0.9;"></p>
+            <div class="modal-actions" style="justify-content: flex-end;">
+                <button type="button" class="btn-secondary" id="btn-alert-ok" style="width: 100%;">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('nodeCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Botones e Interfaz
+        const btnOpenCreate = document.getElementById('btn-open-create');
+        const btnOpenConnections = document.getElementById('btn-open-connections');
+        const btnOpenEdit = document.getElementById('btn-open-edit');
+        const btnDeleteNode = document.getElementById('btn-delete-node');
+        const btnOpenSettings = document.getElementById('btn-open-settings');
+
+        const modalCreate = document.getElementById('modal-create');
+        const modalEdit = document.getElementById('modal-edit');
+        const modalSettings = document.getElementById('modal-settings');
+        const modalConnections = document.getElementById('modal-connections');
+        const modalConfirm = document.getElementById('modal-confirm');
+        const modalAlert = document.getElementById('modal-alert');
+
+        const chkEnableBody2 = document.getElementById('edit-enable-body2');
+        const groupBody2 = document.getElementById('group-body2');
+
+        const rangeConnWidth = document.getElementById('range-connection-width');
+        const labelRangeVal = document.getElementById('label-range-val');
+        const colorConnLine = document.getElementById('color-connection-line');
+
+        // 1. Variable para el portapapeles de estilos
+        let styleClipboard = null;
+
+        // 2. Lógica de Copiar/Pegar
+        document.getElementById('btn-copy-style').addEventListener('click', () => {
+            if (!selectedNode) return;
+            // Guardamos solo los atributos de estilo
+            styleClipboard = {
+                bg: selectedNode.bg,
+                borderColor: selectedNode.borderColor,
+                titleColor: selectedNode.titleColor,
+                bodyColor: selectedNode.bodyColor,
+                titleFontSize: selectedNode.titleFontSize,
+                bodyFontSize: selectedNode.bodyFontSize,
+                width: selectedNode.width,
+                height: selectedNode.height
+            };
+            showCustomAlert("Estilo copiado al portapapeles.");
+        });
+
+        document.getElementById('btn-paste-style').addEventListener('click', () => {
+            if (!selectedNode || !styleClipboard) return;
+            Object.assign(selectedNode, styleClipboard);
+            selectedNode.updateHeight();
+            draw();
+            showCustomAlert("Estilo aplicado al nodo.");
+        });
+
+        // 3. Control de Grilla y Fondo
+        const canvasContainer = document.getElementById('canvas-container');
+        document.getElementById('setting-show-grid').addEventListener('change', (e) => {
+            canvasContainer.style.backgroundImage = e.target.checked ? 
+                'linear-gradient(to right, var(--grid-color) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px)' 
+                : 'none';
+        });
+
+        document.getElementById('setting-bg-color').addEventListener('input', (e) => {
+            // Nota: Esto actualiza el fondo del contenedor principal
+            document.documentElement.style.setProperty('--bg-app', e.target.value);
+        });
+
+        // Configuración de visualización global (solo tema y modo de diagrama)
+        const nodeStyles = {
+            diagramMode: 'normal' // 'normal' o 'concept' (Mapa Conceptual)
+        };
+
+        const CORNER_RADIUS = 15; 
+
+        let nodes = [];
+        let selectedNode = null;
+        let selectedConnection = null; 
+
+        let confirmActionCallback = null;
+
+        function showCustomConfirm(message, callback) {
+            document.getElementById('confirm-message').textContent = message;
+            modalConfirm.classList.add('active');
+            confirmActionCallback = callback;
+        }
+
+        document.getElementById('btn-confirm-ok').addEventListener('click', () => {
+            modalConfirm.classList.remove('active');
+            if (confirmActionCallback) confirmActionCallback(true);
+        });
+
+        document.getElementById('btn-confirm-cancel').addEventListener('click', () => {
+            modalConfirm.classList.remove('active');
+            if (confirmActionCallback) confirmActionCallback(false);
+        });
+
+        function showCustomAlert(message) {
+            document.getElementById('alert-message').textContent = message;
+            modalAlert.classList.add('active');
+        }
+
+        document.getElementById('btn-alert-ok').addEventListener('click', () => {
+            modalAlert.classList.remove('active');
+        });
+
+        rangeConnWidth.addEventListener('input', (e) => {
+            labelRangeVal.textContent = `${e.target.value}px`;
+        });
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            draw();
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        class DataNode {
+            constructor(id, title, bodyLines, x, y, parentId = null, sourceAnchor = 'bottom') {
+                this.id = id;
+                this.title = title;
+                this.bodyLines = bodyLines ? bodyLines.slice(0, 8) : []; 
+                this.x = x;
+                this.y = y;
+                this.parentId = parentId;
+                
+                // Dimensiones del nodo
+                this.width = 150;
+                this.height = 100; 
+
+                // Orientaciones
+                this.sourceAnchor = sourceAnchor; 
+                this.destAnchor = 'top';          
+                
+                this.hasBody2 = false;
+                this.body2Lines = [];
+
+                // Estilos específicos individuales de este nodo (Nuevos requerimientos)
+                this.bg = '#3f3f52';
+                this.borderColor = '#555555'; 
+                this.titleColor = '#4fc3f7';
+                this.bodyColor = '#ffffff';
+                this.titleFontSize = 30;
+                this.bodyFontSize = 27;
+
+                // Campo adicional exclusivo para el cuerpo de la elipse (Mapa Conceptual)
+                this.ellipseBodyLines = [];
+
+                // Atributos de conexión individuales de este cable (entrante)
+                this.connColor = '#81d4fa';
+                this.connWidth = 3;
+                this.connType = 'default'; 
+                this.connDashed = false;
+                this.connTextStart = '';
+                this.connTextEnd = '';
+                this.connTextSize = 14;
+                this.connRouting = 'diagonal'; 
+                this.connForceAlign = 'none';  
+
+                this.updateHeight();
+            }
+
+            updateHeight() {
+                if (nodeStyles.diagramMode === 'concept') {
+                    // En modo conceptual, se conservan las dimensiones manuales editadas por el usuario
+                } else {
+                    const titleArea = this.titleFontSize + 15;
+                    const body1Area = this.bodyLines.length * (this.bodyFontSize + 8);
+                    
+                    let body2Area = 0;
+                    if (this.hasBody2) {
+                        body2Area = 20 + (this.body2Lines.length * (this.bodyFontSize + 8));
+                    }
+
+                    this.height = titleArea + body1Area + body2Area + 20;
+                }
+            }
+        }
+
+        // Nodo base inicial
+        function init() {
+            const baseNode = new DataNode(Date.now(), "Nodo Base", ["Inicio"], 150, 150);
+            nodes.push(baseNode);
+            resizeCanvas();
+        }
+
+        function getDistanceToSegment(px, py, x1, y1, x2, y2) {
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const l2 = dx * dx + dy * dy;
+            if (l2 === 0) return Math.hypot(px - x1, py - y1);
+            let t = ((px - x1) * dx + (py - y1) * dy) / l2;
+            t = Math.max(0, Math.min(1, t));
+            return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+        }
+
+        function getAnchorPoint(N, S, targetConn) {
+            const outgoing = nodes.filter(c => c.parentId === N.id && c.sourceAnchor === S);
+            const incoming = (N.parentId !== null && N.destAnchor === S) ? [N] : [];
+            const totalConns = [...outgoing, ...incoming];
+            
+            const mapped = totalConns.map(c => {
+                const other = (c.id !== N.id) ? c : nodes.find(p => p.id === N.parentId);
+                return { conn: c, other: other };
+            });
+            
+            const validMapped = mapped.filter(m => m.other !== undefined);
+            
+            if (S === 'top' || S === 'bottom') {
+                validMapped.sort((a, b) => a.other.x - b.other.x);
+            } else {
+                validMapped.sort((a, b) => a.other.y - b.other.y);
+            }
+            
+            const K = validMapped.length;
+            const idx = validMapped.findIndex(m => m.conn.id === targetConn.id);
+            const useIdx = idx !== -1 ? idx : 0;
+            const useK = K > 0 ? K : 1;
+            
+            let x, y;
+            if (S === 'top' || S === 'bottom') {
+                x = N.x + ((useIdx + 1) / (useK + 1)) * N.width;
+                y = (S === 'top') ? N.y : N.y + N.height;
+            } else {
+                x = (S === 'left') ? N.x : N.x + N.width;
+                y = N.y + ((useIdx + 1) / (useK + 1)) * N.height;
+            }
+
+            // Proyección matemática exacta sobre la superficie del contorno elíptico
+            if (nodeStyles.diagramMode === 'concept') {
+                const cx = N.x + N.width / 2;
+                const cy = N.y + N.height / 2;
+                const rx = N.width / 2;
+                const ry = N.height / 2;
+                const dx = x - cx;
+                const dy = y - cy;
+                if (dx !== 0 || dy !== 0) {
+                    const norm = Math.sqrt((dx * dx) / (rx * rx) + (dy * dy) / (ry * ry));
+                    return { x: cx + dx / norm, y: cy + dy / norm };
+                }
+            }
+
+            return { x, y };
+        }
+
+        function applyConstraints() {
+            nodes.forEach(node => {
+                if (node.parentId !== null && node.connForceAlign && node.connForceAlign !== 'none') {
+                    const parent = nodes.find(n => n.id === node.parentId);
+                    if (parent) {
+                        const startPt = getAnchorPoint(parent, node.sourceAnchor, node);
+                        
+                        if (node.connForceAlign === 'horizontal') {
+                            const dummyNode = { ...node, y: 0 };
+                            const dummyAnchor = getAnchorPoint(dummyNode, node.destAnchor, node);
+                            const offsetFromTop = dummyAnchor.y;
+                            node.y = startPt.y - offsetFromTop;
+                        } else if (node.connForceAlign === 'vertical') {
+                            const dummyNode = { ...node, x: 0 };
+                            const dummyAnchor = getAnchorPoint(dummyNode, node.destAnchor, node);
+                            const offsetFromLeft = dummyAnchor.x;
+                            node.x = startPt.x - offsetFromLeft;
+                        }
+                    }
+                }
+            });
+        }
+
+        function getConnectionPoints(node, parent) {
+            const startPt = getAnchorPoint(parent, node.sourceAnchor, node);
+            const endPt = getAnchorPoint(node, node.destAnchor, node);
+
+            if (node.connRouting === 'orthogonal') {
+                let p1 = { x: startPt.x, y: startPt.y };
+                let p2 = { x: endPt.x, y: endPt.y };
+                const D = 20; 
+                
+                if (node.sourceAnchor === 'top') p1.y -= D;
+                else if (node.sourceAnchor === 'bottom') p1.y += D;
+                else if (node.sourceAnchor === 'left') p1.x -= D;
+                else if (node.sourceAnchor === 'right') p1.x += D;
+
+                if (node.destAnchor === 'top') p2.y -= D;
+                else if (node.destAnchor === 'bottom') p2.y += D;
+                else if (node.destAnchor === 'left') p2.x -= D;
+                else if (node.destAnchor === 'right') p2.x += D;
+
+                const srcVert = ['top', 'bottom'].includes(node.sourceAnchor);
+                const destVert = ['top', 'bottom'].includes(node.destAnchor);
+                
+                let points = [{ x: startPt.x, y: startPt.y }];
+                points.push(p1);
+                
+                if (srcVert && destVert) {
+                    const midY = p1.y + (p2.y - p1.y) / 2;
+                    points.push({ x: p1.x, y: midY });
+                    points.push({ x: p2.x, y: midY });
+                } else if (!srcVert && !destVert) {
+                    const midX = p1.x + (p2.x - p1.x) / 2;
+                    points.push({ x: midX, y: p1.y });
+                    points.push({ x: midX, y: p2.y });
+                } else if (srcVert && !destVert) {
+                    points.push({ x: p1.x, y: p2.y });
+                } else { 
+                    points.push({ x: p2.x, y: p1.y });
+                }
+                
+                points.push(p2);
+                points.push({ x: endPt.x, y: endPt.y });
+                return points;
+            } else {
+                return [
+                    { x: startPt.x, y: startPt.y },
+                    { x: endPt.x, y: endPt.y }
+                ];
+            }
+        }
+
+        function roundRect(x, y, width, height, radius, fill, stroke, strokeWidth) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+            if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = strokeWidth; ctx.stroke(); }
+        }
+
+        function drawEllipse(x, y, width, height, fill, stroke, strokeWidth) {
+            ctx.beginPath();
+            ctx.ellipse(x + width / 2, y + height / 2, width / 2, height / 2, 0, 0, 2 * Math.PI);
+            ctx.closePath();
+            if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+            if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = strokeWidth; ctx.stroke(); }
+        }
+
+        function drawCrowsFoot(ctx, x, y, angle, color, width) {
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.lineCap = "round";
+            
+            const L = 16; 
+            const H = 10; 
+            const perpAngle = angle + Math.PI / 2;
+
+            const vx = x - L * Math.cos(angle);
+            const vy = y - L * Math.sin(angle);
+            
+            ctx.moveTo(vx, vy);
+            ctx.lineTo(x, y);
+            
+            ctx.moveTo(vx, vy);
+            ctx.lineTo(x + H * Math.cos(perpAngle), y + H * Math.sin(perpAngle));
+            
+            ctx.moveTo(vx, vy);
+            ctx.lineTo(x - H * Math.cos(perpAngle), y - H * Math.sin(perpAngle));
+            
+            ctx.stroke();
+        }
+
+        function drawDoubleTicks(ctx, x, y, angle, color, width) {
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.lineCap = "round";
+            
+            const H = 8; 
+            const d1 = 6;  
+            const d2 = 12; 
+            const perpAngle = angle + Math.PI / 2;
+
+            const tx1 = x - d1 * Math.cos(angle);
+            const ty1 = y - d1 * Math.sin(angle);
+            ctx.moveTo(tx1 - H * Math.cos(perpAngle), ty1 - H * Math.sin(perpAngle));
+            ctx.lineTo(tx1 + H * Math.cos(perpAngle), ty1 + H * Math.sin(perpAngle));
+
+            const tx2 = x - d2 * Math.cos(angle);
+            const ty2 = y - d2 * Math.sin(angle);
+            ctx.moveTo(tx2 - H * Math.cos(perpAngle), ty2 - H * Math.sin(perpAngle));
+            ctx.lineTo(tx2 + H * Math.cos(perpAngle), ty2 + H * Math.sin(perpAngle));
+
+            ctx.stroke();
+        }
+
+        function draw() {
+            applyConstraints();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Dibujar Cables con lógica avanzada
+            nodes.forEach(node => {
+                if (node.parentId !== null) {
+                    const parent = nodes.find(n => n.id === node.parentId);
+                    if (parent) {
+                        const points = getConnectionPoints(node, parent);
+                        const len = points.length;
+                        const pStart = points[0];
+                        const pStartNext = points[1];
+                        const pEndPrev = points[len - 2];
+                        const pEnd = points[len - 1];
+
+                        if (selectedConnection === node) {
+                            ctx.beginPath();
+                            ctx.moveTo(pStart.x, pStart.y);
+                            for (let j = 1; j < len; j++) {
+                                ctx.lineTo(points[j].x, points[j].y);
+                            }
+                            ctx.strokeStyle = 'rgba(255, 179, 0, 0.4)';
+                            ctx.lineWidth = node.connWidth + 10;
+                            ctx.setLineDash([]);
+                            ctx.stroke();
+                        }
+
+                        ctx.beginPath();
+                        ctx.moveTo(pStart.x, pStart.y);
+                        for (let j = 1; j < len; j++) {
+                            ctx.lineTo(points[j].x, points[j].y);
+                        }
+                        ctx.strokeStyle = node.connColor;
+                        ctx.lineWidth = node.connWidth;
+                        
+                        if (node.connDashed) {
+                            ctx.setLineDash([8, 6]);
+                        } else {
+                            ctx.setLineDash([]);
+                        }
+                        ctx.stroke();
+                        ctx.setLineDash([]); 
+
+                        const angleDest = Math.atan2(pEnd.y - pEndPrev.y, pEnd.x - pEndPrev.x);
+                        const angleSrc = Math.atan2(pStartNext.y - pStart.y, pStartNext.x - pStart.x);
+                        const arrowLen = 14;
+
+                        function drawArrow(headX, headY, rotAngle) {
+                            ctx.beginPath();
+                            ctx.moveTo(headX, headY);
+                            ctx.lineTo(headX - arrowLen * Math.cos(rotAngle - Math.PI / 6), headY - arrowLen * Math.sin(rotAngle - Math.PI / 6));
+                            ctx.lineTo(headX - arrowLen * Math.cos(rotAngle + Math.PI / 6), headY - arrowLen * Math.sin(rotAngle + Math.PI / 6));
+                            ctx.closePath();
+                            ctx.fillStyle = node.connColor;
+                            ctx.fill();
+                        }
+
+                        if (node.connType === 'arrow-destination' || node.connType === 'arrow-both') {
+                            drawArrow(pEnd.x, pEnd.y, angleDest);
+                        }
+                        if (node.connType === 'arrow-source' || node.connType === 'arrow-both') {
+                            drawArrow(pStart.x, pStart.y, angleSrc + Math.PI);
+                        }
+
+                        if (node.connType === 'sql-one-many') {
+                            drawDoubleTicks(ctx, pStart.x, pStart.y, angleSrc + Math.PI, node.connColor, node.connWidth);
+                            drawCrowsFoot(ctx, pEnd.x, pEnd.y, angleDest, node.connColor, node.connWidth);
+                        }
+                        if (node.connType === 'sql-many-one') {
+                            drawCrowsFoot(ctx, pStart.x, pStart.y, angleSrc + Math.PI, node.connColor, node.connWidth);
+                            drawDoubleTicks(ctx, pEnd.x, pEnd.y, angleDest, node.connColor, node.connWidth);
+                        }
+
+                        ctx.fillStyle = node.connColor;
+                        ctx.font = `${node.connTextSize}px sans-serif`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        const textOffset = 40; 
+                        const sideShift = 14; 
+
+                        if (node.connTextStart && node.connTextStart.trim().length > 0) {
+                            const angleStartSegment = Math.atan2(pStartNext.y - pStart.y, pStartNext.x - pStart.x);
+                            const perp = angleStartSegment + Math.PI / 2;
+                            const tx = pStart.x + textOffset * Math.cos(angleStartSegment) + sideShift * Math.cos(perp);
+                            const ty = pStart.y + textOffset * Math.sin(angleStartSegment) + sideShift * Math.sin(perp);
+                            ctx.fillText(node.connTextStart.substring(0, 5), tx, ty);
+                        }
+
+                        if (node.connTextEnd && node.connTextEnd.trim().length > 0) {
+                            const angleEndSegment = Math.atan2(pEnd.y - pEndPrev.y, pEnd.x - pEndPrev.x);
+                            const perp = angleEndSegment + Math.PI / 2;
+                            const tx = pEnd.x - textOffset * Math.cos(angleEndSegment) + sideShift * Math.cos(perp);
+                            const ty = pEnd.y - textOffset * Math.sin(angleEndSegment) + sideShift * Math.sin(perp);
+                            ctx.fillText(node.connTextEnd.substring(0, 5), tx, ty);
+                        }
+                    }
+                }
+            });
+
+            // 2. Dibujar Nodos con Estilos Individuales
+            nodes.forEach(node => {
+                const isSelected = (selectedNode === node);
+                const currentBorderColor = isSelected ? '#ffb300' : node.borderColor;
+                const currentBorderWidth = isSelected ? 4 : 2;
+
+                ctx.textAlign = 'center';
+
+                if (nodeStyles.diagramMode === 'concept') {
+                    // Modo Mapa Conceptual: Elipse con estilos individuales
+                    drawEllipse(node.x, node.y, node.width, node.height, node.bg, currentBorderColor, currentBorderWidth);
+                    
+                    // Mostrar ÚNICAMENTE el cuerpo de la elipse (no renderizar el título de identificación)
+                    ctx.fillStyle = node.bodyColor;
+                    ctx.font = `${node.bodyFontSize}px sans-serif`;
+                    ctx.textBaseline = 'middle';
+
+                    const linesCount = node.ellipseBodyLines ? node.ellipseBodyLines.length : 0;
+                    if (linesCount > 0) {
+                        const stepY = node.bodyFontSize + 8;
+                        const totalHeight = (linesCount - 1) * stepY;
+                        const startY = (node.y + node.height / 2) - (totalHeight / 2);
+
+                        node.ellipseBodyLines.forEach((line, index) => {
+                            const currentY = startY + index * stepY;
+                            ctx.fillText(truncateText(line, node.width - 25, node.bodyFontSize), node.x + node.width / 2, currentY);
+                        });
+                    } else {
+                        // Texto indicador vacío por defecto si no tiene cuerpo aún
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                        ctx.font = 'italic 20px sans-serif';
+                        ctx.fillText("[Vacío]", node.x + node.width / 2, node.y + node.height / 2);
+                    }
+                    ctx.textBaseline = 'alphabetic'; // Restaurar baseline estándar
+                } else {
+                    // Modo Normal: Rectángulo curvo con cuerpos y estilos individuales
+                    roundRect(node.x, node.y, node.width, node.height, CORNER_RADIUS, node.bg, currentBorderColor, currentBorderWidth);
+                    
+                    // Título
+                    ctx.fillStyle = node.titleColor;
+                    ctx.font = `bold ${node.titleFontSize}px sans-serif`;
+                    ctx.fillText(truncateText(node.title, node.width - 15, node.titleFontSize), node.x + node.width / 2, node.y + node.titleFontSize + 2);
+
+                    // Primera Línea Divisoria
+                    let currentY = node.y + node.titleFontSize + 12;
+                    ctx.beginPath();
+                    ctx.moveTo(node.x + 5, currentY);
+                    ctx.lineTo(node.x + node.width - 5, currentY);
+                    ctx.strokeStyle = node.borderColor;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+
+                    // Primer Cuerpo
+                    ctx.fillStyle = node.bodyColor;
+                    ctx.font = `${node.bodyFontSize}px sans-serif`;
+                    const stepY = node.bodyFontSize + 8;
+                    
+                    currentY += 20; 
+                    node.bodyLines.forEach((line) => {
+                        ctx.fillText(truncateText(line, node.width - 15, node.bodyFontSize), node.x + node.width / 2, currentY);
+                        currentY += stepY;
+                    });
+
+                    // Segundo Cuerpo (si corresponde)
+                    if (node.hasBody2) {
+                        ctx.beginPath();
+                        ctx.moveTo(node.x + 5, currentY - 5);
+                        ctx.lineTo(node.x + node.width - 5, currentY - 5);
+                        ctx.strokeStyle = node.borderColor;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+
+                        currentY += 15;
+                        node.body2Lines.forEach((line) => {
+                            ctx.fillText(truncateText(line, node.width - 15, node.bodyFontSize), node.x + node.width / 2, currentY);
+                            currentY += stepY;
+                        });
+                    }
+                }
+            });
+        }
+
+        function truncateText(text, maxWidth, fontSize) {
+            ctx.font = `${fontSize}px sans-serif`;
+            let width = ctx.measureText(text).width;
+            if (width <= maxWidth) return text;
+            while (width > maxWidth && text.length > 0) {
+                text = text.slice(0, -1);
+                width = ctx.measureText(text + '..').width;
+            }
+            return text + '..';
+        }
+
+        function updateDiagramModeUIVisibility() {
+            const isConcept = (nodeStyles.diagramMode === 'concept');
+            
+            // Ocultar/Mostrar campos de cuerpo rectangular en el DOM
+            document.querySelectorAll('.group-normal-body').forEach(el => {
+                el.style.display = isConcept ? 'none' : '';
+            });
+
+            // Mostrar/Ocultar campos de cuerpo de la elipse
+            document.querySelectorAll('.group-concept-body').forEach(el => {
+                el.style.display = isConcept ? '' : 'none';
+            });
+
+            // Ocultar/Mostrar dimensiones en modal de edición
+            document.getElementById('group-concept-dimensions').style.display = isConcept ? 'block' : 'none';
+
+            // Forzar habilitación para todos los anclajes
+            document.querySelectorAll('.anchor-selector').forEach(select => {
+                Array.from(select.options).forEach(opt => {
+                    if (opt.value === 'left' || opt.value === 'right') {
+                        opt.disabled = false;
+                    }
+                });
+            });
+        }
+
+        function updateActionBar() {
+            // ... código existente ...
+            const hasSelection = (selectedNode !== null);
+            btnOpenEdit.disabled = !hasSelection;
+            btnDeleteNode.disabled = !hasSelection || (nodes.length <= 1);
+            document.getElementById('btn-copy-style').disabled = !hasSelection;
+            document.getElementById('btn-paste-style').disabled = !hasSelection || !styleClipboard;
+            // ...
+            if (selectedNode) {
+                btnOpenEdit.disabled = false;
+                btnDeleteNode.disabled = (nodes.length <= 1);
+            } else {
+                btnOpenEdit.disabled = true;
+                btnDeleteNode.disabled = true;
+            }
+
+            if (selectedConnection) {
+                btnOpenConnections.disabled = false;
+            } else {
+                btnOpenConnections.disabled = true;
+            }
+        }
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            let hitNode = null;
+
+            // 1. Verificar colisión con nodos primero
+            for (let i = nodes.length - 1; i >= 0; i--) {
+                const node = nodes[i];
+                if (mouseX >= node.x && mouseX <= node.x + node.width && mouseY >= node.y && mouseY <= node.y + node.height) {
+                    hitNode = node;
+                    break;
+                }
+            }
+
+            if (hitNode) {
+                selectedNode = hitNode;
+                selectedConnection = null; 
+            } else {
+                // 2. Colisión con cables
+                let hitConnection = null;
+                for (let i = 0; i < nodes.length; i++) {
+                    const node = nodes[i];
+                    if (node.parentId !== null) {
+                        const parent = nodes.find(n => n.id === node.parentId);
+                        if (parent) {
+                            const points = getConnectionPoints(node, parent);
+                            let minDistance = Infinity;
+                            for (let j = 0; j < points.length - 1; j++) {
+                                const distance = getDistanceToSegment(mouseX, mouseY, points[j].x, points[j].y, points[j+1].x, points[j+1].y);
+                                if (distance < minDistance) {
+                                    minDistance = distance;
+                                }
+                            }
+
+                            if (minDistance < 10) {
+                                hitConnection = node;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (hitConnection) {
+                    selectedConnection = hitConnection;
+                    selectedNode = null; 
+                } else {
+                    selectedNode = null;
+                    selectedConnection = null;
+                }
+            }
+
+            updateActionBar();
+            draw();
+        });
+
+        // Movimiento por teclado de nodos seleccionados
+        window.addEventListener('keydown', (e) => {
+            if (!selectedNode) return;
+            if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) e.preventDefault();
+            switch (e.key) {
+                case 'ArrowLeft':  selectedNode.x -= 50; break;
+                case 'ArrowRight': selectedNode.x += 50; break;
+                case 'ArrowUp':    selectedNode.y -= 50; break;
+                case 'ArrowDown':  selectedNode.y += 50; break;
+                default: return;
+            }
+            draw();
+        });
+
+        btnOpenCreate.addEventListener('click', () => {
+            document.getElementById('form-create').reset();
+            updateDiagramModeUIVisibility();
+            modalCreate.classList.add('active');
+        });
+
+        btnOpenConnections.addEventListener('click', () => {
+            if (!selectedConnection) return;
+            updateDiagramModeUIVisibility();
+
+            document.getElementById('connection-routing').value = selectedConnection.connRouting || 'diagonal';
+            document.getElementById('connection-force-align').value = selectedConnection.connForceAlign || 'none';
+            document.getElementById('connection-source-anchor').value = selectedConnection.sourceAnchor || 'bottom';
+            document.getElementById('connection-dest-anchor').value = selectedConnection.destAnchor || 'top';
+            colorConnLine.value = selectedConnection.connColor;
+            rangeConnWidth.value = selectedConnection.connWidth;
+            labelRangeVal.textContent = `${selectedConnection.connWidth}px`;
+            document.getElementById('connection-type').value = selectedConnection.connType;
+            document.getElementById('connection-style').value = selectedConnection.connDashed ? 'dashed' : 'solid';
+            document.getElementById('connection-text-start').value = selectedConnection.connTextStart;
+            document.getElementById('connection-text-end').value = selectedConnection.connTextEnd;
+            document.getElementById('connection-text-size').value = selectedConnection.connTextSize;
+
+            modalConnections.classList.add('active');
+        });
+
+        btnOpenEdit.addEventListener('click', () => {
+            if (!selectedNode) return;
+            updateDiagramModeUIVisibility();
+
+            // Cargar datos identificadores y textos
+            document.getElementById('edit-title').value = selectedNode.title;
+            document.getElementById('edit-body').value = selectedNode.bodyLines.join('\n');
+            document.getElementById('edit-ellipse-body').value = (selectedNode.ellipseBodyLines || []).join('\n');
+            
+            // Valores de dimensionamiento para Mapas Conceptuales
+            document.getElementById('edit-width').value = selectedNode.width;
+            document.getElementById('edit-height').value = selectedNode.height;
+
+            chkEnableBody2.checked = selectedNode.hasBody2;
+            groupBody2.style.display = selectedNode.hasBody2 ? 'block' : 'none';
+            document.getElementById('edit-body2').value = selectedNode.body2Lines.join('\n');
+
+            // Cargar estilos individuales del nodo seleccionado para editarlos
+            document.getElementById('edit-font-title').value = selectedNode.titleFontSize;
+            document.getElementById('edit-font-body').value = selectedNode.bodyFontSize;
+            document.getElementById('edit-color-bg').value = selectedNode.bg;
+            document.getElementById('edit-color-border').value = selectedNode.borderColor;
+            document.getElementById('edit-color-title').value = selectedNode.titleColor;
+            document.getElementById('edit-color-body').value = selectedNode.bodyColor;
+
+            modalEdit.classList.add('active');
+        });
+
+        btnOpenSettings.addEventListener('click', () => {
+            updateDiagramModeUIVisibility();
+            modalSettings.classList.add('active');
+        });
+
+        document.querySelectorAll('.btn-close-modal').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+            });
+        });
+
+        // ACCIÓN: CREAR NODO
+        document.getElementById('form-create').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = document.getElementById('create-title').value.trim();
+            const parentName = document.getElementById('create-parent-name').value.trim();
+            const anchor = document.getElementById('create-connection').value;
+            const destAnchor = document.getElementById('create-dest-connection').value;
+            
+            if (nodes.some(n => n.title.toLowerCase() === title.toLowerCase())) {
+                showCustomAlert("Error: Nombre de nodo ya existente."); 
+                return;
+            }
+            const parentNode = nodes.find(n => n.title.toLowerCase() === parentName.toLowerCase());
+            if (!parentNode) {
+                showCustomAlert(`Error: El padre "${parentName}" no existe.`); 
+                return;
+            }
+
+            let lines = [];
+            let ellipseLines = [];
+
+            if (nodeStyles.diagramMode === 'concept') {
+                const ellipseBodyText = document.getElementById('create-ellipse-body').value;
+                ellipseLines = ellipseBodyText.split('\n').filter(l => l.trim() !== "").slice(0, 8);
+            } else {
+                const bodyText = document.getElementById('create-body').value;
+                lines = bodyText.split('\n').filter(l => l.trim() !== "").slice(0, 8);
+            }
+
+            let newX = parentNode.x, newY = parentNode.y;
+            switch (anchor) {
+                case 'top':    newY -= 250; break;
+                case 'bottom': newY += (parentNode.height + 100); break;
+                case 'left':   newX -= 250; break;
+                case 'right':  newX += (parentNode.width + 100); break;
+            }
+
+            const newNode = new DataNode(Date.now(), title, lines, newX, newY, parentNode.id, anchor);
+            newNode.destAnchor = destAnchor;
+            newNode.ellipseBodyLines = ellipseLines;
+            newNode.connRouting = 'diagonal'; 
+
+            nodes.push(newNode);
+            selectedNode = newNode;
+            selectedConnection = null;
+            updateActionBar();
+            modalCreate.classList.remove('active');
+            draw();
+        });
+
+        // ACCIÓN: APLICAR ESTILO AL CABLE SELECCIONADO
+        document.getElementById('form-connections').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!selectedConnection) return;
+
+            selectedConnection.connRouting = document.getElementById('connection-routing').value;
+            selectedConnection.connForceAlign = document.getElementById('connection-force-align').value;
+            selectedConnection.sourceAnchor = document.getElementById('connection-source-anchor').value;
+            selectedConnection.destAnchor = document.getElementById('connection-dest-anchor').value;
+            selectedConnection.connColor = colorConnLine.value;
+            selectedConnection.connWidth = parseInt(rangeConnWidth.value);
+            selectedConnection.connType = document.getElementById('connection-type').value;
+            selectedConnection.connDashed = (document.getElementById('connection-style').value === 'dashed');
+            selectedConnection.connTextStart = document.getElementById('connection-text-start').value.trim().substring(0, 5);
+            selectedConnection.connTextEnd = document.getElementById('connection-text-end').value.trim().substring(0, 5);
+            selectedConnection.connTextSize = parseInt(document.getElementById('connection-text-size').value) || 14;
+
+            modalConnections.classList.remove('active');
+            draw();
+        });
+
+        // ACCIÓN: GUARDAR EDICIÓN DE NODO (Con estilos individuales)
+        document.getElementById('form-edit').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!selectedNode) return;
+
+            const newTitle = document.getElementById('edit-title').value.trim();
+
+            if (nodes.some(n => n.title.toLowerCase() === newTitle.toLowerCase() && n.id !== selectedNode.id)) {
+                showCustomAlert("Error: Ese nombre ya está siendo usado.");
+                return;
+            }
+
+            // Guardar nombre (identificador)
+            selectedNode.title = newTitle;
+
+            // Guardar estilos individuales introducidos en el modal de edición
+            selectedNode.titleFontSize = parseInt(document.getElementById('edit-font-title').value) || 30;
+            selectedNode.bodyFontSize = parseInt(document.getElementById('edit-font-body').value) || 27;
+            selectedNode.bg = document.getElementById('edit-color-bg').value;
+            selectedNode.borderColor = document.getElementById('edit-color-border').value;
+            selectedNode.titleColor = document.getElementById('edit-color-title').value;
+            selectedNode.bodyColor = document.getElementById('edit-color-body').value;
+
+            if (nodeStyles.diagramMode === 'concept') {
+                // Aplicar dimensiones personalizadas en modo conceptual
+                selectedNode.width = parseInt(document.getElementById('edit-width').value) || 150;
+                selectedNode.height = parseInt(document.getElementById('edit-height').value) || 100;
+                
+                // Aplicar cuerpo de la elipse
+                const ellipseBodyText = document.getElementById('edit-ellipse-body').value;
+                selectedNode.ellipseBodyLines = ellipseBodyText.split('\n').filter(l => l.trim() !== "").slice(0, 8);
+            } else {
+                const bodyText = document.getElementById('edit-body').value;
+                selectedNode.bodyLines = bodyText.split('\n').filter(l => l.trim() !== "").slice(0, 8);
+                selectedNode.hasBody2 = chkEnableBody2.checked;
+                if (chkEnableBody2.checked) {
+                    const body2Text = document.getElementById('edit-body2').value;
+                    selectedNode.body2Lines = body2Text.split('\n').filter(l => l.trim() !== "").slice(0, 8);
+                } else {
+                    selectedNode.body2Lines = [];
+                }
+            }
+
+            selectedNode.updateHeight();
+            modalEdit.classList.remove('active');
+            draw();
+        });
+
+        // ACCIÓN: ELIMINAR NODO
+        btnDeleteNode.addEventListener('click', () => {
+            if (!selectedNode || nodes.length <= 1) return;
+            
+            showCustomConfirm(`¿Eliminar el nodo "${selectedNode.title}" y todas sus ramificaciones de forma recursiva?`, (confirmed) => {
+                if (confirmed) {
+                    const idToRemove = selectedNode.id;
+
+                    // Remover recursivamente todos los nodos descendientes
+                    let idsToRemove = new Set([idToRemove]);
+                    let prevSize = 0;
+                    while (idsToRemove.size > prevSize) {
+                        prevSize = idsToRemove.size;
+                        nodes.forEach(n => {
+                            if (n.parentId && idsToRemove.has(n.parentId)) {
+                                idsToRemove.add(n.id);
+                            }
+                        });
+                    }
+
+                    nodes = nodes.filter(n => !idsToRemove.has(n.id));
+                    selectedNode = null;
+                    selectedConnection = null;
+                    updateActionBar();
+                    draw();
+                }
+            });
+        });
+
+        // CONFIGURACIONES GENERALES
+        document.getElementById('setting-diagram-mode').addEventListener('change', (e) => {
+            nodeStyles.diagramMode = e.target.value;
+            
+            // Reajustar dimensiones por defecto de los nodos al cambiar de modo
+            nodes.forEach(n => {
+                if (nodeStyles.diagramMode === 'concept') {
+                    n.width = 150;
+                    n.height = 100;
+                } else {
+                    n.width = 150;
+                    n.updateHeight();
+                }
+            });
+
+            updateDiagramModeUIVisibility();
+            draw();
+        });
+
+        document.getElementById('setting-theme').addEventListener('change', (e) => {
+            document.documentElement.setAttribute('data-theme', e.target.value);
+            draw();
+        });
+
+        // FUNCIONES AUXILIARES: EXPORTACIÓN / IMPORTACIÓN JSON
+        function downloadJSON(data, filename) {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 1. Exportar Ajustes generales (interfaz y modo de diagramación)
+        document.getElementById('btn-export-settings').addEventListener('click', () => {
+            const settingsPayload = {
+                diagramMode: nodeStyles.diagramMode,
+                theme: document.getElementById('setting-theme').value
+            };
+            downloadJSON(settingsPayload, 'diagrama_ajustes.json');
+        });
+
+        // Trigger Importar Ajustes
+        document.getElementById('btn-import-settings').addEventListener('click', () => {
+            document.getElementById('file-import-settings').click();
+        });
+
+        // Cargar Ajustes
+        document.getElementById('file-import-settings').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const parsed = JSON.parse(evt.target.result);
+                    if (parsed.diagramMode) {
+                        nodeStyles.diagramMode = parsed.diagramMode;
+                        document.getElementById('setting-diagram-mode').value = nodeStyles.diagramMode;
+                    }
+                    if (parsed.theme) {
+                        document.documentElement.setAttribute('data-theme', parsed.theme);
+                        document.getElementById('setting-theme').value = parsed.theme;
+                    }
+                    
+                    nodes.forEach(n => n.updateHeight());
+                    updateDiagramModeUIVisibility();
+                    draw();
+                    showCustomAlert("Ajustes de interfaz importados correctamente.");
+                } catch(err) {
+                    showCustomAlert("Error al procesar el archivo JSON de configuración.");
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = ''; // Reset
+        });
+
+        // 2. Exportar Datos completos de los nodos (con sus estilos individuales)
+        document.getElementById('btn-export-data').addEventListener('click', () => {
+            const nodesPayload = nodes.map(n => ({
+                id: n.id,
+                title: n.title,
+                bodyLines: n.bodyLines,
+                x: n.x,
+                y: n.y,
+                width: n.width,
+                height: n.height,
+                parentId: n.parentId,
+                sourceAnchor: n.sourceAnchor,
+                destAnchor: n.destAnchor,
+                hasBody2: n.hasBody2,
+                body2Lines: n.body2Lines,
+                // Atributos de estilos individuales
+                bg: n.bg,
+                borderColor: n.borderColor,
+                titleColor: n.titleColor,
+                bodyColor: n.bodyColor,
+                titleFontSize: n.titleFontSize,
+                bodyFontSize: n.bodyFontSize,
+                ellipseBodyLines: n.ellipseBodyLines,
+                // Atributos de conexión individuales
+                connColor: n.connColor,
+                connWidth: n.connWidth,
+                connType: n.connType,
+                connDashed: n.connDashed,
+                connTextStart: n.connTextStart,
+                connTextEnd: n.connTextEnd,
+                connTextSize: n.connTextSize,
+                connRouting: n.connRouting,
+                connForceAlign: n.connForceAlign
+            }));
+            downloadJSON(nodesPayload, 'diagrama_datos.json');
+        });
+
+        // Trigger Importar Datos
+        document.getElementById('btn-import-data').addEventListener('click', () => {
+            document.getElementById('file-import-data').click();
+        });
+
+        // Cargar Datos completos de los nodos
+        document.getElementById('file-import-data').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const parsed = JSON.parse(evt.target.result);
+                    if (!Array.isArray(parsed)) {
+                        showCustomAlert("El formato de datos importados es incorrecto.");
+                        return;
+                    }
+
+                    // Reconstruir estructura de nodos y sus estilos individuales cargados
+                    nodes = parsed.map(item => {
+                        const node = new DataNode(item.id, item.title, item.bodyLines, item.x, item.y, item.parentId, item.sourceAnchor);
+                        node.width = item.width || 150;
+                        node.height = item.height || 100;
+                        node.destAnchor = item.destAnchor || 'top';
+                        node.hasBody2 = !!item.hasBody2;
+                        node.body2Lines = item.body2Lines || [];
+                        
+                        // Cargar estilos de nodos individuales personalizados
+                        node.bg = item.bg || '#3f3f52';
+                        node.borderColor = item.borderColor || '#555555';
+                        node.titleColor = item.titleColor || '#4fc3f7';
+                        node.bodyColor = item.bodyColor || '#ffffff';
+                        node.titleFontSize = item.titleFontSize || 30;
+                        node.bodyFontSize = item.bodyFontSize || 27;
+                        node.ellipseBodyLines = item.ellipseBodyLines || [];
+
+                        // Cargar estilos de cables
+                        node.connColor = item.connColor || '#81d4fa';
+                        node.connWidth = item.connWidth || 3;
+                        node.connType = item.connType || 'default';
+                        node.connDashed = !!item.connDashed;
+                        node.connTextStart = item.connTextStart || '';
+                        node.connTextEnd = item.connTextEnd || '';
+                        node.connTextSize = item.connTextSize || 14;
+                        node.connRouting = item.connRouting || 'diagonal';
+                        node.connForceAlign = item.connForceAlign || 'none';
+                        return node;
+                    });
+
+                    selectedNode = null;
+                    selectedConnection = null;
+                    updateActionBar();
+                    draw();
+                    showCustomAlert("Lienzo restaurado exitosamente desde archivo JSON.");
+                } catch(err) {
+                    showCustomAlert("Error al procesar el archivo JSON de proyecto.");
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = ''; // Reset
+        });
+
+        chkEnableBody2.addEventListener('change', (e) => {
+            groupBody2.style.display = e.target.checked ? 'block' : 'none';
+        });
+
+        // Inicialización de la App
+        init();
+    </script>
+</body>
+</html>
